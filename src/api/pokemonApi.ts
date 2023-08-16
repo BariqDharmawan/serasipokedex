@@ -1,19 +1,26 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { Pokemon, PokemonList } from './types';
+import { LIMIT_POKEMON, Pokemon, PokemonList } from './types';
+import { HYDRATE } from 'next-redux-wrapper';
 
 export const pokemonApi = createApi({
-	reducerPath: 'pokemonApi',
 	baseQuery: fetchBaseQuery({
 		baseUrl: 'https://pokeapi.co/api/v2/',
 	}),
 	endpoints: builder => ({
 		getListPokemon: builder.query<PokemonList, { offset: number }>({
-			query: ({ offset }) => `pokemon?limit=20&offset=${offset}`,
+			query: ({ offset }) =>
+				`pokemon?offset=${offset}&limit=${LIMIT_POKEMON}`,
+			providesTags: ['LIST_POKEMON'],
 		}),
-		getPokemonByName: builder.query<Pokemon, string>({
-			query: name => `pokemon/${name}`,
+		getSinglePokemon: builder.query<Pokemon, { id: number }>({
+			query: ({ id }) => `pokemon/${id}`,
+			providesTags: ['DETAIL_POKEMON'],
 		}),
 	}),
+	tagTypes: ['LIST_POKEMON', 'DETAIL_POKEMON'],
 });
 
-export const { useGetPokemonByNameQuery, useGetListPokemonQuery } = pokemonApi;
+export const { useGetListPokemonQuery, useLazyGetSinglePokemonQuery } =
+	pokemonApi;
+
+export const { getSinglePokemon, getListPokemon } = pokemonApi.endpoints;

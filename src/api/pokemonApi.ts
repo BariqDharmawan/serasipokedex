@@ -1,5 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { LIMIT_POKEMON, Pokemon, PokemonList } from './types';
+import {
+	Abilities,
+	LIMIT_POKEMON,
+	Pokemon,
+	PokemonByAbility,
+	PokemonList,
+} from './types';
 import { HYDRATE } from 'next-redux-wrapper';
 
 export const pokemonApi = createApi({
@@ -17,11 +23,19 @@ export const pokemonApi = createApi({
 			query: ({ id }) => `pokemon/${id}`,
 			providesTags: ['DETAIL_POKEMON'],
 		}),
+		getPokemonByAbility: builder.query<any, { ability: string }>({
+			query: ({ ability }) => `ability/${ability}`,
+			providesTags: ['LIST_POKEMON'],
+			transformResponse: (res: {
+				data: { pokemon: PokemonByAbility[] };
+			}) => res.data.pokemon,
+		}),
 	}),
 	tagTypes: ['LIST_POKEMON', 'DETAIL_POKEMON'],
 });
 
-export const { useGetListPokemonQuery, useLazyGetSinglePokemonQuery } =
-	pokemonApi;
-
-export const { getSinglePokemon, getListPokemon } = pokemonApi.endpoints;
+export const {
+	useGetListPokemonQuery,
+	useLazyGetSinglePokemonQuery,
+	useLazyGetPokemonByAbilityQuery,
+} = pokemonApi;

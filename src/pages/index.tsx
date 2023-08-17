@@ -1,20 +1,33 @@
 import {
 	useGetListPokemonQuery,
+	useLazyGetPokemonByAbilityQuery,
 	useLazyGetSinglePokemonQuery,
 } from '@/api/pokemonApi';
-import { LIMIT_POKEMON, Pokemon } from '@/api/types';
+import { LIMIT_POKEMON, Pokemon, PokemonAbilities } from '@/api/types';
 import Layout from '@/components/layout';
 import useScrollToBottom from '@/hooks/useScrollToBottom';
-import { Box, Container, SimpleGrid, rem, Text } from '@mantine/core';
+import {
+	Box,
+	Container,
+	SimpleGrid,
+	rem,
+	Text,
+	MultiSelect,
+} from '@mantine/core';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import _ from 'lodash';
 
 export default function Home() {
 	const [listDetailPokemon, setListDetailPokemon] = useState<Pokemon[]>([]);
 	const [offsetPokemon, setOffsetPokemon] = useState(0);
+	const [filterAbilities, setFilterAbilities] = useState([]);
+	const [idsPokemon, setIdsPokemon] = useState<number[] | undefined>([]);
 
 	const [getSinglePokemon] = useLazyGetSinglePokemonQuery();
+	const [getPokemonByAbility] = useLazyGetPokemonByAbilityQuery();
+
 	const { data: listPokemon } = useGetListPokemonQuery({
 		offset: offsetPokemon,
 	});
@@ -22,14 +35,18 @@ export default function Home() {
 	const isAtBottom = useScrollToBottom();
 
 	useEffect(() => {
-		const idsPokemon = listPokemon?.results.map(pokemon => {
-			return Number(
-				pokemon.url
-					.replace('https://pokeapi.co/api/v2/pokemon/', '')
-					.replace('/', '')
-			);
-		});
+		setIdsPokemon(
+			listPokemon?.results.map(pokemon => {
+				return Number(
+					pokemon.url
+						.replace('https://pokeapi.co/api/v2/pokemon/', '')
+						.replace('/', '')
+				);
+			})
+		);
+	}, [listPokemon]);
 
+	useEffect(() => {
 		const listDetail = () => {
 			return idsPokemon?.map(async idPokemon => {
 				const result = await getSinglePokemon({
@@ -42,12 +59,19 @@ export default function Home() {
 						...prevState,
 						result.data,
 					]);
+
+					result.data?.abilities.map(ability => {
+						//@ts-ignore
+						setFilterAbilities(pevState =>
+							_.uniq([...pevState, ability.ability.name])
+						);
+					});
 				}
 			});
 		};
 
 		listDetail();
-	}, [getSinglePokemon, listPokemon]);
+	}, [idsPokemon, getSinglePokemon]);
 
 	useEffect(() => {
 		if (isAtBottom) {
@@ -60,10 +84,33 @@ export default function Home() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [isAtBottom]);
 
+	const [searchAbility, setSearchAbility] = useState('');
+
 	return (
 		<Layout title='Serasi Pokedex'>
 			<main>
 				<Container pb='lg'>
+					<MultiSelect
+						data={filterAbilities}
+						label='Filter By Ability'
+						placeholder='Pick the ability'
+						mb='xl'
+						maxDropdownHeight={200}
+						onSearchChange={val => {
+							setSearchAbility(val);
+						}}
+						onChange={selectedAbilty => {
+							selectedAbilty.map(ability => {});
+						}}
+						nothingFound={
+							<>
+								Couldnt found ability <b>{searchAbility}</b>
+							</>
+						}
+						searchable
+						clearable
+					/>
+
 					<SimpleGrid
 						cols={4}
 						spacing='md'

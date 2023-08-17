@@ -3,7 +3,7 @@ export type PokemonUtilities = {
 	url: string;
 };
 
-type PokemonAbilities = {
+export type PokemonAbilities = {
 	ability: PokemonUtilities;
 	is_hidden: boolean;
 	slot: number;
@@ -74,6 +74,24 @@ export type Pokemon = {
 	moves: MovePokemon[];
 	stats: PokemonStats[];
 	sprites: PokemonSprites;
+};
+
+export type PokemonByAbility = {
+	is_hidden: boolean;
+	pokemon: PokemonUtilities;
+	slot: number;
+};
+
+export type Abilities = {
+	effect_changes: [];
+	effect_entries: [];
+	flavor_text_entries: [];
+	generation: PokemonUtilities;
+	id: number;
+	is_main_series: boolean;
+	name: string;
+	names: [];
+	pokemon: PokemonByAbility[];
 };
 
 export const LIMIT_POKEMON = 30;

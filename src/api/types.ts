@@ -65,9 +65,9 @@ type PokemonSprites = {
 
 export type Pokemon = {
 	abilities: PokemonAbilities[];
+	base_experience: number;
 	id: number;
 	name: string;
-	images: string;
 	types: TypesPokemon[];
 	weight: number;
 	height: number;

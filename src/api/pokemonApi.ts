@@ -1,18 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import {
-	Abilities,
-	LIMIT_POKEMON,
-	Pokemon,
-	PokemonByAbility,
-	PokemonList,
-} from './types';
-import { HYDRATE } from 'next-redux-wrapper';
+import { Abilities, LIMIT_POKEMON, Pokemon, PokemonList } from './types';
 
 export const pokemonApi = createApi({
 	baseQuery: fetchBaseQuery({
 		baseUrl: 'https://pokeapi.co/api/v2/',
 	}),
 	reducerPath: 'pokemonApi',
+	tagTypes: ['LIST_POKEMON', 'DETAIL_POKEMON', 'ABILITIES'],
 	endpoints: builder => ({
 		getListPokemon: builder.query<PokemonList, { offset: number }>({
 			query: ({ offset }) =>
@@ -21,17 +15,17 @@ export const pokemonApi = createApi({
 		}),
 		getSinglePokemon: builder.query<Pokemon, { id: number }>({
 			query: ({ id }) => `pokemon/${id}`,
-			providesTags: ['DETAIL_POKEMON'],
+			providesTags: (result, error, { id }) => [
+				{ type: 'LIST_POKEMON', id },
+			],
 		}),
-		getPokemonByAbility: builder.query<any, { ability: string }>({
+		getPokemonByAbility: builder.query<Abilities, { ability: string }>({
 			query: ({ ability }) => `ability/${ability}`,
-			providesTags: ['LIST_POKEMON'],
-			transformResponse: (res: {
-				data: { pokemon: PokemonByAbility[] };
-			}) => res.data.pokemon,
+			providesTags: (result, error, { ability }) => [
+				{ type: 'ABILITIES', id: ability },
+			],
 		}),
 	}),
-	tagTypes: ['LIST_POKEMON', 'DETAIL_POKEMON'],
 });
 
 export const {

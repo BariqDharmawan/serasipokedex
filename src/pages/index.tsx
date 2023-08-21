@@ -13,6 +13,8 @@ import {
 	rem,
 	Text,
 	MultiSelect,
+	Loader,
+	Flex,
 } from '@mantine/core';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -30,10 +32,15 @@ export default function Home() {
 	const [getSinglePokemon] = useLazyGetSinglePokemonQuery();
 	const [getFilteredAbility] = useLazyGetPokemonByAbilityQuery();
 
-	const { data: listPokemon, refetch: refetchListPokemon } =
-		useGetListPokemonQuery({
-			offset: offsetPokemon,
-		});
+	const [isLoadingAllSingle, setIsLoadingAllSingle] = useState<boolean[]>([]);
+
+	const {
+		data: listPokemon,
+		isLoading,
+		refetch: refetchListPokemon,
+	} = useGetListPokemonQuery({
+		offset: offsetPokemon,
+	});
 
 	const isAtBottom = useScrollToBottom();
 
@@ -51,10 +58,19 @@ export default function Home() {
 
 	useEffect(() => {
 		const listDetail = () => {
+			idsPokemon && setIsLoadingAllSingle(idsPokemon.map(_ => true));
 			return idsPokemon?.map(async idPokemon => {
 				const result = await getSinglePokemon({
 					id: idPokemon,
 				});
+
+				setIsLoadingAllSingle(prevLoadingState =>
+					prevLoadingState.map((isLoading, index) =>
+						index === idsPokemon.indexOf(idPokemon)
+							? false
+							: isLoading
+					)
+				);
 
 				if (result) {
 					//@ts-ignore
@@ -205,6 +221,12 @@ export default function Home() {
 							  ))
 							: []}
 					</SimpleGrid>
+
+					{isLoadingAllSingle.some(_ => true) && (
+						<Flex justify='center' mt='lg'>
+							<Loader />
+						</Flex>
+					)}
 				</Container>
 			</main>
 		</Layout>
